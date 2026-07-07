@@ -12,25 +12,8 @@ function showToast(msg) {
 }
 
 function getFullCategories() {
-  return [...VOCABULARY_DATA, ...ADDITIONAL_CATEGORIES.map(c => {
-    const wordCount = c.difficulty === 3 ? 50 : 50;
-    const words = [];
-    for (let i = 0; i < wordCount; i++) {
-      const pw = PLACEHOLDER_WORDS[i % PLACEHOLDER_WORDS.length];
-      words.push({
-        ...pw,
-        word: `${c.id}-word-${i + 1}`,
-        definition: `${pw.definition} (${c.name} #${i + 1})`,
-        example: `${pw.example} (${c.name})`,
-      });
-    }
-    return {
-      ...c,
-      words,
-      collocations: collocationsPlaceholder,
-      quizQuestions: quizPlaceholder,
-    };
-  })];
+  const expanded = allCategoryMeta.map(c => expandCategoryData(c.id, c.name, c.icon, c.diff, c.desc, CATEGORY_WORDS[c.id] || []));
+  return [...VOCABULARY_DATA, ...expanded];
 }
 
 function getCategory(id) {
