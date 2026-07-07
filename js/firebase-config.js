@@ -1,11 +1,10 @@
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_PROJECT.firebaseapp.com',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_PROJECT.appspot.com',
-  messagingSenderId: 'YOUR_SENDER_ID',
-  appId: 'YOUR_APP_ID',
-  measurementId: 'YOUR_MEASUREMENT_ID'
+  apiKey: 'AIzaSyCd3JreTTWX2KjsCSP-J-wALdkCz5C-V8k',
+  authDomain: 'esl-vocab-app.firebaseapp.com',
+  projectId: 'esl-vocab-app',
+  storageBucket: 'esl-vocab-app.firebasestorage.app',
+  messagingSenderId: '92463877389',
+  appId: '1:92463877389:web:9fff52da148597648a7444',
 };
 
 let app, auth, db, analytics;
