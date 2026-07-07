@@ -50,6 +50,11 @@ const CATEGORY_WORDS = {
     ['bright', 'a strong and vivid color', 'The flowers are bright and cheerful.', '/braɪt/', 'adjective', 2],
     ['colorful', 'having many different colors', 'The parrot is very colorful.', '/ˈkʌlərfl/', 'adjective', 2],
     ['rainbow', 'many colors in a curve across the sky', 'A rainbow appeared after the rain.', '/ˈreɪnboʊ/', 'noun', 2],
+    ['teal', 'a dark greenish-blue color', 'She painted her room teal.', '/tiːl/', 'adjective', 2],
+    ['navy', 'a very dark blue color', 'The uniform is navy blue.', '/ˈneɪvi/', 'adjective', 2],
+    ['turquoise', 'a greenish-blue color like the ocean', 'The water in the Caribbean is turquoise.', '/ˈtɜːrkwɔɪz/', 'adjective', 2],
+    ['violet', 'a light purple color', 'The flowers are violet.', '/ˈvaɪələt/', 'adjective', 2],
+    ['tan', 'a light brown color', 'He wears tan shoes.', '/tæn/', 'adjective', 2],
   ],
   'numbers': [
     ['one', 'the number 1', 'I have one apple.', '/wʌn/', 'number', 1],
@@ -543,6 +548,11 @@ const CATEGORY_WORDS = {
     ['take care', 'a phrase said when saying goodbye, wishing safety', 'Take care, see you soon!', '/teɪk keər/', 'phrase', 1],
     ['how do you do', 'a formal greeting when meeting someone', 'How do you do? I am Mr. Jones.', '/haʊ duː juː duː/', 'phrase', 2],
     ['pleased to meet you', 'a polite phrase when introduced to someone', 'Pleased to meet you, Mrs. Lee.', '/pliːzd tə miːt juː/', 'phrase', 2],
+    ['hey', 'a casual way to say hello to a friend', 'Hey, how is it going?', '/heɪ/', 'interjection', 1],
+    ['hi', 'a short friendly greeting', 'Hi there! How are you?', '/haɪ/', 'interjection', 1],
+    ['cheers', 'a friendly expression used when drinking or saying goodbye', 'Cheers! See you next time.', '/tʃɪərz/', 'interjection', 2],
+    ['farewell', 'a formal way to say goodbye', 'Farewell, my friend.', '/ˌfeərˈwel/', 'noun', 2],
+    ['long time no see', 'a greeting for someone you have not seen in a while', 'Wow, long time no see! How have you been?', '/lɒŋ taɪm noʊ siː/', 'phrase', 2],
   ],
   'seasons': [
     ['spring', 'the season after winter when flowers bloom', 'Flowers bloom in spring.', '/sprɪŋ/', 'noun', 1],
@@ -1022,6 +1032,8 @@ const CATEGORY_WORDS = {
     ['fire alarm', 'a device that makes a loud sound to warn of fire', 'The fire alarm rings when there is smoke.', '/ˈfaɪər əˈlɑːrm/', 'noun', 2],
     ['evacuate', 'to leave a building because of danger', 'We evacuate the school during a fire drill.', '/ɪˈvækjueɪt/', 'verb', 3],
     ['survive', 'to stay alive in a dangerous situation', 'The cat survived the fall from the tree.', '/sərˈvaɪv/', 'verb', 3],
+    ['rescue', 'to save someone from danger', 'The firefighter rescued the dog from the fire.', '/ˈreskjuː/', 'verb', 2],
+    ['safety', 'being free from harm or danger', 'We practice fire drills for safety.', '/ˈseɪfti/', 'noun', 1],
   ],
   'toys': [
     ['doll', 'a toy that looks like a baby or a person', 'My sister plays with her doll.', '/dɒl/', 'noun', 1],
@@ -1108,6 +1120,8 @@ const CATEGORY_WORDS = {
     ['what time', 'used to ask about a specific time', 'What time does school start?', '/wɒt taɪm/', 'phrase', 1],
     ['what kind', 'used to ask about a type or category', 'What kind of music do you like?', '/wɒt kaɪnd/', 'phrase', 2],
     ['what color', 'used to ask about color', 'What color is your bag?', '/wɒt ˈkʌlər/', 'phrase', 1],
+    ['what size', 'used to ask about size', 'What size shoes do you wear?', '/wɒt saɪz/', 'phrase', 2],
+    ['how come', 'used to ask for a reason (informal)', 'How come you are late?', '/haʊ kʌm/', 'phrase', 2],
   ],
   'time': [
     ['clock', 'a device that shows the time', 'The clock on the wall says three o\'clock.', '/klɒk/', 'noun', 1],
@@ -1198,6 +1212,8 @@ const CATEGORY_WORDS = {
     ['my pleasure', 'a polite response to thank you', 'My pleasure, I enjoyed helping.', '/maɪ ˈpleʒər/', 'phrase', 2],
     ['good manners', 'polite behavior toward others', 'Using please and thank you shows good manners.', '/ɡʊd ˈmænərz/', 'noun', 1],
     ['respect', 'to treat someone with kindness and consideration', 'We should respect our teachers.', '/rɪˈspekt/', 'verb', 2],
+    ['with pleasure', 'a polite way to say yes gladly', 'With pleasure, I will help you.', '/wɪð ˈpleʒər/', 'phrase', 2],
+    ['pardon me', 'a polite way to apologize or get attention', 'Pardon me, may I get past?', '/ˈpɑːrdn miː/', 'phrase', 2],
   ],
   'phrasal-common': [
     ['get up', 'to leave your bed after sleeping', 'I get up at 7 o\'clock every morning.', '/ɡet ʌp/', 'phrasal verb', 1],
@@ -1240,6 +1256,8 @@ const CATEGORY_WORDS = {
     ['come over', 'to visit someone at their home', 'Come over to my house after school.', '/kʌm ˈoʊvər/', 'phrasal verb', 1],
     ['go over', 'to move toward or cross to the other side', 'I go over to my friend\'s house.', '/ɡoʊ ˈoʊvər/', 'phrasal verb', 1],
     ['walk in', 'to enter in a casual way', 'I walk in to the classroom and sit down.', '/wɔːk ɪn/', 'phrasal verb', 1],
+    ['go back', 'to return to a place', 'I need to go back home.', '/ɡoʊ bæk/', 'phrasal verb', 1],
+    ['go away', 'to leave a place or person', 'The pain will go away soon.', '/ɡoʊ əˈweɪ/', 'phrasal verb', 1],
   ],
   'phrasal-communication': [
     ['speak up', 'to talk louder', 'Please speak up, I cannot hear you.', '/spiːk ʌp/', 'phrasal verb', 2],
@@ -1260,6 +1278,8 @@ const CATEGORY_WORDS = {
     ['yell at', 'to shout at someone in anger', 'My dad yelled at me for breaking the window.', '/jel æt/', 'phrasal verb', 2],
     ['smile at', 'to show a smile toward someone', 'I smile at my friend across the room.', '/smaɪl æt/', 'phrasal verb', 1],
     ['shout at', 'to speak very loudly at someone', 'Do not shout at your little brother.', '/ʃaʊt æt/', 'phrasal verb', 2],
+    ['argue with', 'to disagree with someone using words', 'Do not argue with your teacher.', '/ˈɑːrɡjuː wɪð/', 'phrasal verb', 2],
+    ['agree with', 'to have the same opinion as someone', 'I agree with you on that.', '/əˈɡriː wɪð/', 'phrasal verb', 2],
   ],
   'idioms-common': [
     ['piece of cake', 'something very easy to do', 'The test was a piece of cake!', '/piːs əv keɪk/', 'idiom', 2],
@@ -1300,6 +1320,10 @@ const CATEGORY_WORDS = {
     ['have a snack', 'to eat a small amount of food between meals', 'I have a snack after school.', '/hæv ə snæk/', 'collocation', 1],
     ['boil water', 'to heat water until it bubbles', 'I boil water to make pasta.', '/bɔɪl ˈwɔːtər/', 'collocation', 2],
     ['fry an egg', 'to cook an egg in hot oil', 'I fry an egg for breakfast.', '/fraɪ æn eɡ/', 'collocation', 2],
+    ['bake a cake', 'to cook a cake in the oven', 'I bake a cake for my birthday.', '/beɪk ə keɪk/', 'collocation', 2],
+    ['slice bread', 'to cut bread into pieces', 'I slice the bread for sandwiches.', '/slaɪs bred/', 'collocation', 2],
+    ['peel a potato', 'to remove the skin of a potato', 'I peel the potatoes before boiling them.', '/piːl ə pəˈteɪtoʊ/', 'collocation', 2],
+    ['grate cheese', 'to shred cheese into small pieces', 'I grate cheese on top of the pasta.', '/ɡreɪt tʃiːz/', 'collocation', 2],
   ],
   'collocations-clothing': [
     ['put on clothes', 'to dress yourself', 'I put on my clothes after showering.', '/pʊt ɒn kloʊðz/', 'collocation', 1],
@@ -1317,6 +1341,11 @@ const CATEGORY_WORDS = {
     ['button up your shirt', 'to close your shirt with buttons', 'Button up your shirt before going out.', '/ˈbʌtn ʌp jɔːr ʃɜːrt/', 'collocation', 2],
     ['tie your shoes', 'to make a bow with your shoelaces', 'I tie my shoes before going outside.', '/taɪ jɔːr ʃuːz/', 'collocation', 1],
     ['roll up sleeves', 'to push sleeves up your arm', 'I roll up my sleeves before washing my hands.', '/roʊl ʌp sliːvz/', 'collocation', 2],
+    ['wear a belt', 'to put a belt around your waist', 'I wear a belt to hold up my pants.', '/weər ə belt/', 'collocation', 1],
+    ['button a shirt', 'to close a shirt using buttons', 'I button my shirt before going to school.', '/ˈbʌtn ə ʃɜːrt/', 'collocation', 2],
+    ['unzip a jacket', 'to open a jacket by pulling down the zipper', 'I unzip my jacket when I get inside.', '/ʌnˈzɪp ə ˈdʒækɪt/', 'collocation', 2],
+    ['dress up', 'to wear fancy clothes for a special event', 'I dress up for the party.', '/dres ʌp/', 'collocation', 1],
+    ['sew a button', 'to attach a button with a needle and thread', 'I sew a button back on my shirt.', '/soʊ ə ˈbʌtn/', 'collocation', 3],
   ],
   'collocations-weather': [
     ['check the weather', 'to look at the weather forecast', 'I check the weather before going out.', '/tʃek ðə ˈweðər/', 'collocation', 1],
@@ -1336,6 +1365,9 @@ const CATEGORY_WORDS = {
     ['dry season', 'the time of year with little rain', 'During the dry season, the grass turns brown.', '/draɪ ˈsiːzn/', 'noun', 2],
     ['warm weather', 'comfortably hot weather', 'I love the warm weather of summer.', '/wɔːrm ˈweðər/', 'noun', 1],
     ['cold spell', 'a short period of cold weather', 'A cold spell is coming next week.', '/koʊld spel/', 'noun', 2],
+    ['heat wave', 'a period of very hot weather', 'A heat wave is making the temperature rise.', '/hiːt weɪv/', 'noun', 2],
+    ['rain shower', 'a short period of rain', 'A rain shower passed through quickly.', '/reɪn ˈʃaʊər/', 'noun', 2],
+    ['weather report', 'a TV or radio broadcast about weather', 'I watch the weather report in the morning.', '/ˈweðər rɪˈpɔːrt/', 'noun', 2],
   ],
   'adjectives': [
     ['big', 'large in size', 'The elephant is big.', '/bɪɡ/', 'adjective', 1],
