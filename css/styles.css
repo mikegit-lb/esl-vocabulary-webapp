@@ -747,3 +747,43 @@ nav { display: flex; align-items: center; gap: 8px; }
   .hero-buttons { flex-direction: column; align-items: center; }
   .quiz-info { grid-template-columns: 1fr; }
 }
+
+/* Roadmap & Enhancements */
+.roadmap-track {
+  background-image: linear-gradient(to right, transparent 10%, var(--border) 10%, var(--border) 90%, transparent 90%);
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
+  background-position: center 48px;
+}
+
+.roadmap-node.reached .node-circle {
+  animation: pulse-primary 2s infinite ease-in-out;
+}
+
+.roadmap-node.locked .node-circle {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.btn-tts {
+  transition: var(--transition);
+}
+
+.btn-tts:hover {
+  transform: scale(1.1);
+  background-color: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pulse-primary {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}

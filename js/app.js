@@ -11,6 +11,18 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+function speakWord(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.85;
+    window.speechSynthesis.speak(utterance);
+  } else {
+    showToast('Speech synthesis not supported.');
+  }
+}
+
 function showConfetti(colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']) {
   const canvas = document.createElement('canvas');
   canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:10000';
@@ -76,6 +88,24 @@ function handleMarkMastered(categoryId, wordId) {
     updateDailyQuestProgress(currentUser.uid, 'words_learned');
     showConfetti(['#FFD700', '#FF6B6B', '#4ECDC4']);
   });
+}
+
+async function handleSaveWordNote(catId, wordId) {
+  const input = document.getElementById('word-note-input');
+  if (!input) return;
+  const note = input.value.trim();
+  if (!currentUser) { showToast('Sign in to save notes!'); return; }
+  
+  if (!userProfile.progress) {
+    userProfile.progress = {};
+  }
+  if (!userProfile.progress.wordNotes) {
+    userProfile.progress.wordNotes = {};
+  }
+  userProfile.progress.wordNotes[wordId] = note;
+  
+  await updateUserProgress(currentUser.uid, { wordNotes: userProfile.progress.wordNotes });
+  showToast('💾 Note saved successfully!');
 }
 
 function render(app) {
@@ -318,6 +348,43 @@ function renderDashboard(el) {
         </div>
       </div>
 
+      <h2 style="margin: 24px 0 16px;">🗺️ Learning Journey Checkpoints</h2>
+      <div class="roadmap-container card" style="margin-bottom: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div class="roadmap-track" style="display: flex; justify-content: space-between; align-items: center; position: relative; overflow-x: auto; padding: 20px 10px; gap: 20px;">
+          ${[
+            { name: 'Beginner', icon: '🥚', targetXP: 0, desc: 'Start journey' },
+            { name: 'Starter', icon: '🌱', targetXP: 500, desc: 'Level 2 Milestone' },
+            { name: 'Explorer', icon: '🔍', targetXP: 1500, desc: 'Level 3 Milestone' },
+            { name: 'Word Collector', icon: '📚', targetWords: 100, desc: 'Master 100 words' },
+            { name: 'Scholar', icon: '🎓', targetXP: 8000, desc: 'Level 6 Milestone' }
+          ].map((checkpoint, idx) => {
+            const currentXP = progress?.totalPoints || 0;
+            const currentMastered = masteredCount;
+            let isReached = false;
+            let progressLabel = '';
+            
+            if (checkpoint.targetXP !== undefined) {
+              isReached = currentXP >= checkpoint.targetXP;
+              progressLabel = `${currentXP}/${checkpoint.targetXP} XP`;
+              if (checkpoint.targetXP === 0) progressLabel = 'Unlocked';
+            } else if (checkpoint.targetWords !== undefined) {
+              isReached = currentMastered >= checkpoint.targetWords;
+              progressLabel = `${currentMastered}/${checkpoint.targetWords} words`;
+            }
+            
+            return `
+              <div class="roadmap-node ${isReached ? 'reached' : 'locked'}" style="display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 120px; z-index: 2;">
+                <div class="node-circle" style="width: 60px; height: 60px; border-radius: 50%; background: ${isReached ? 'var(--primary-light)' : '#E0E0E0'}; border: 3px solid ${isReached ? 'var(--primary)' : '#BDBDBD'}; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 8px; transition: var(--transition); box-shadow: var(--shadow);">
+                  ${checkpoint.icon}
+                </div>
+                <strong style="font-size: 0.9rem; color: ${isReached ? 'var(--text)' : 'var(--text-light)'}">${checkpoint.name}</strong>
+                <span style="font-size: 0.75rem; color: var(--text-light); margin-top: 2px;">${progressLabel}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
       <h2 style="margin-bottom:16px">Continue Learning</h2>
       <div class="card-grid">
         ${categories.slice(0, 6).map(c => {
@@ -422,6 +489,7 @@ function renderCategory(el, params) {
         <button class="btn btn-secondary" onclick="handleStartExercise('flashcards','${cat.id}')">🃏 Flashcards</button>
         <button class="btn btn-accent" onclick="handleStartExercise('fill-blank','${cat.id}')">✍️ Fill Blanks</button>
         <button class="btn btn-outline" onclick="handleStartExercise('spelling','${cat.id}')">🔤 Spelling</button>
+        <button class="btn btn-outline" style="border-color:var(--secondary);color:var(--secondary)" onclick="handleStartExercise('pronunciation','${cat.id}')">🎙️ Pronunciation</button>
       </div>
 
       ${completedWords >= cat.words.length ? `
@@ -441,7 +509,8 @@ function renderCategory(el, params) {
             <div class="word-main">
               <div class="word-status status-${m >= 2 ? 'mastered' : m >= 1 ? 'learning' : 'new'}"></div>
               <span class="word-text">${w.word}</span>
-              <span style="color:var(--text-light);font-size:0.9rem">${w.pos}</span>
+              <button class="btn btn-sm btn-outline btn-tts" style="padding:4px 8px;margin-left:8px;font-size:0.8rem;border:none;background:rgba(0,0,0,0.03)" onclick="event.stopPropagation();speakWord('${w.word.replace(/'/g, "\\'")}')" title="Listen">🔊</button>
+              <span style="color:var(--text-light);font-size:0.9rem;margin-left:6px">${w.pos}</span>
               <span style="font-size:0.8rem;margin-left:auto">${m >= 2 ? '⭐⭐' : m >= 1 ? '⭐' : ''}</span>
             </div>
             <span style="color:var(--text-light);font-size:0.85rem">${w.phonetic}</span>
@@ -464,8 +533,9 @@ function renderWord(el, params) {
     <div class="word-detail container">
       <button class="btn btn-sm btn-outline" onclick="navigateTo('category',{id:'${cat.id}'})" style="margin-bottom:16px">← Back to ${cat.name}</button>
       <div class="card">
-        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
-          <h1>${word.word}</h1>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <h1 style="margin:0">${word.word}</h1>
+          <button class="btn btn-sm btn-outline btn-tts" style="padding:6px 12px;font-size:1.1rem;border:none;background:rgba(0,0,0,0.04)" onclick="speakWord('${word.word.replace(/'/g, "\\'")}')" title="Listen">🔊 Listen</button>
           <span class="phonetic">${word.phonetic || ''}</span>
           <span style="font-size:1.2rem">${mastery >= 2 ? '⭐⭐' : mastery >= 1 ? '⭐' : ''}</span>
         </div>
@@ -486,6 +556,12 @@ function renderWord(el, params) {
           <button class="btn btn-sm ${mastery >= 2 ? 'btn-secondary' : 'btn-primary'}" onclick="handleMarkMastered('${cat.id}','${wordId}')" ${mastery >= 2 ? 'disabled' : ''}>
             ${mastery >= 2 ? '✅ Mastered' : '⭐ Mark as Mastered'}
           </button>
+        </div>
+
+        <div class="notes-section" style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px">
+          <h3 style="margin-bottom:8px">✍️ My Study Notes</h3>
+          <textarea id="word-note-input" class="form-input" style="min-height:80px;resize:vertical" placeholder="Write your own sentence, mnemonic, or translation here...">${userProfile?.progress?.wordNotes?.[wordId] || ''}</textarea>
+          <button class="btn btn-sm btn-secondary" style="margin-top:10px" onclick="handleSaveWordNote('${cat.id}', '${wordId}')">Save Note</button>
         </div>
       </div>
     </div>
@@ -513,7 +589,7 @@ function renderExerciseContent(el, cat, type, state, questions) {
   const elapsed = getElapsedTime();
 
   let questionHTML = '';
-  let feedbackHTML = '';
+  let feedbackHTML = `<div id="feedback" class="feedback"><span class="fb-icon"></span><span class="fb-text"></span></div>`;
 
   if (q.type === 'multiple-choice' || q.type === 'mcq') {
     questionHTML = `
@@ -526,7 +602,6 @@ function renderExerciseContent(el, cat, type, state, questions) {
         </div>
       </div>
     `;
-    feedbackHTML = `<div id="feedback" class="feedback"><span class="fb-icon"></span><span class="fb-text"></span></div>`;
   } else if (q.type === 'flashcard') {
     questionHTML = `
       <div class="card flashcard" id="flashcard" onclick="flipFlashcard()">
@@ -593,6 +668,26 @@ function renderExerciseContent(el, cat, type, state, questions) {
           ${q.options.map((opt, i) => `
             <button class="option-btn" onclick="handleSituationAnswer(this, ${i === q.options.indexOf(q.answer) ? 1 : 0})">${opt}</button>
           `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (q.type === 'pronunciation') {
+    questionHTML = `
+      <div class="exercise-question" style="text-align:center">
+        <div style="font-size:4.5rem;margin-bottom:16px">🎙️</div>
+        <h2>Pronunciation Challenge</h2>
+        <p style="color:var(--text-light);margin-bottom:12px">Read the word aloud:</p>
+        <h1 style="font-size:3.2rem;margin-bottom:8px;color:var(--primary);font-weight:800">${q.word}</h1>
+        <p style="font-size:1.2rem;color:var(--text-light);margin-bottom:16px">${q.phonetic || ''}</p>
+        <p style="color:var(--text-light);margin-bottom:24px;font-style:italic">"${q.example}"</p>
+        
+        <div style="display:flex;justify-content:center;gap:12px;margin-bottom:16px">
+          <button class="btn btn-outline" style="padding:10px 20px" onclick="speakWord('${q.word.replace(/'/g, "\\'")}')">🔊 Listen First</button>
+          <button id="mic-btn" class="btn btn-accent" style="padding:10px 20px" onclick="startMicRecording('${q.word.replace(/'/g, "\\'")}')">🎙️ Tap to Speak</button>
+        </div>
+        <div id="speech-transcript" style="font-weight:600;min-height:30px;color:var(--secondary);font-size:1.1rem;margin-top:12px"></div>
+        <div id="speech-skip" style="margin-top:20px;text-align:center">
+          <button class="btn btn-sm btn-outline" onclick="handleSpeechSkip()" style="opacity:0.7">Skip (Skip Speech)</button>
         </div>
       </div>
     `;
@@ -686,6 +781,81 @@ function handleSpellingAnswer() {
 
   input.disabled = true;
   if (correct) exerciseState.correct++;
+  exerciseState.currentIndex++;
+  setTimeout(() => advanceExercise(), 1500);
+}
+
+let speechRecognitionSession = null;
+
+function startMicRecording(targetWord) {
+  const micBtn = document.getElementById('mic-btn');
+  const transcriptDiv = document.getElementById('speech-transcript');
+  if (!micBtn || !transcriptDiv) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('Speech recognition not supported in this browser.');
+    transcriptDiv.textContent = 'Speech recognition not supported. Click "Skip" to continue.';
+    return;
+  }
+
+  if (speechRecognitionSession) {
+    try { speechRecognitionSession.stop(); } catch(e) {}
+  }
+
+  speechRecognitionSession = new SpeechRecognition();
+  speechRecognitionSession.lang = 'en-US';
+  speechRecognitionSession.interimResults = false;
+  speechRecognitionSession.maxAlternatives = 1;
+
+  micBtn.textContent = 'Listening... 🎙️';
+  micBtn.style.background = '#FF5722';
+  transcriptDiv.textContent = 'Say the word clearly...';
+
+  speechRecognitionSession.onresult = function(event) {
+    const spoken = event.results[0][0].transcript.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    const target = targetWord.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    transcriptDiv.textContent = `You said: "${spoken}"`;
+
+    const correct = spoken === target || spoken.includes(target) || target.includes(spoken);
+    const feedback = document.getElementById('feedback');
+    if (feedback) {
+      feedback.className = `feedback show ${correct ? 'correct' : 'incorrect'}`;
+      feedback.querySelector('.fb-icon').textContent = correct ? '✅' : '❌';
+      feedback.querySelector('.fb-text').textContent = correct ? 'Awesome pronunciation!' : `Expected: "${targetWord}". Try again!`;
+    }
+
+    micBtn.textContent = '🎙️ Tap to Speak';
+    micBtn.style.background = '';
+
+    if (correct) {
+      exerciseState.correct++;
+      exerciseState.currentIndex++;
+      setTimeout(() => advanceExercise(), 2000);
+    }
+  };
+
+  speechRecognitionSession.onerror = function(event) {
+    console.error('Speech error:', event.error);
+    transcriptDiv.textContent = `Error: ${event.error}. Please try again.`;
+    micBtn.textContent = '🎙️ Tap to Speak';
+    micBtn.style.background = '';
+  };
+
+  speechRecognitionSession.start();
+}
+
+function handleSpeechSkip() {
+  if (speechRecognitionSession) {
+    try { speechRecognitionSession.stop(); } catch(e) {}
+  }
+  const feedback = document.getElementById('feedback');
+  if (feedback) {
+    feedback.className = `feedback show correct`;
+    feedback.querySelector('.fb-icon').textContent = '✅';
+    feedback.querySelector('.fb-text').textContent = 'Skipped (Marked Correct)';
+  }
+  exerciseState.correct++;
   exerciseState.currentIndex++;
   setTimeout(() => advanceExercise(), 1500);
 }

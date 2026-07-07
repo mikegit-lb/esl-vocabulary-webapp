@@ -131,6 +131,17 @@ function buildSpellingChallenge(words) {
   }));
 }
 
+function buildPronunciationChallenge(words) {
+  return words.slice(0, 8).map(w => ({
+    type: 'pronunciation',
+    word: w.word,
+    phonetic: w.phonetic || w.phonetics || '',
+    definition: w.definition,
+    example: w.example,
+    points: 20,
+  }));
+}
+
 function buildExerciseQuestions(type, words, allWords) {
   switch (type) {
     case 'multiple-choice': return buildMultipleChoice(words, allWords);
@@ -140,6 +151,7 @@ function buildExerciseQuestions(type, words, allWords) {
     case 'sentence-builder': return buildSentenceBuilder(words);
     case 'situation-match': return buildSituationMatch(words);
     case 'spelling': return buildSpellingChallenge(words);
+    case 'pronunciation': return buildPronunciationChallenge(words);
     default: return words.map(w => ({ type: 'multiple-choice', word: w.word, question: `What does "${w.word}" mean?`, options: getRandomOptions(w, allWords), correctAnswer: w.word, definition: w.definition, points: 10 }));
   }
 }
