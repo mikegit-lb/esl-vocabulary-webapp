@@ -615,9 +615,6 @@ function renderExerciseContent(el, cat, type, state, questions) {
     </div>
   `;
 
-  if (q.type === 'flashcard') {
-    document.getElementById('flashcard')?.addEventListener('click', flipFlashcard);
-  }
   if (q.type === 'fill-blank' || q.type === 'fill') {
     setTimeout(() => document.getElementById('fill-answer')?.focus(), 100);
   }
