@@ -333,7 +333,7 @@ function renderWord(el, params) {
 
   el.innerHTML = `
     <div class="word-detail container">
-      <button class="btn btn-sm btn-outline" onclick="navigateTo('category',{id:'${cat.id}')" style="margin-bottom:16px">← Back to ${cat.name}</button>
+      <button class="btn btn-sm btn-outline" onclick="navigateTo('category',{id:'${cat.id}'})" style="margin-bottom:16px">← Back to ${cat.name}</button>
       <div class="card">
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
           <h1>${word.word}</h1>
