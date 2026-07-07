@@ -11,6 +11,44 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+function showConfetti(colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']) {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:10000';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const particles = Array.from({ length: 60 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height * -1,
+    w: Math.random() * 10 + 5,
+    h: Math.random() * 6 + 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vy: Math.random() * 3 + 2,
+    vx: (Math.random() - 0.5) * 2,
+    rot: Math.random() * 360,
+    rotV: (Math.random() - 0.5) * 5,
+  }));
+  let frame = 0;
+  function animate() {
+    if (frame++ > 120) { canvas.remove(); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rotV;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
 function getFullCategories() {
   const expanded = allCategoryMeta.map(c => expandCategoryData(c.id, c.name, c.icon, c.diff, c.desc, CATEGORY_WORDS[c.id] || []));
   return expanded;
@@ -18,6 +56,26 @@ function getFullCategories() {
 
 function getCategory(id) {
   return getFullCategories().find(c => c.id === id);
+}
+
+function handleMarkLearning(categoryId, wordId) {
+  if (!currentUser) { showToast('Sign in to track your progress!'); return; }
+  updateWordMastery(currentUser.uid, wordId, 1);
+  updateDailyQuestProgress(currentUser.uid, 'words_learned', 0.5);
+  showToast('📖 Added to learning list!');
+}
+
+function handleMarkMastered(categoryId, wordId) {
+  if (!currentUser) { showToast('Sign in to track your progress!'); return; }
+  const wasMastered = userProfile?.progress?.wordMastery?.[wordId] >= 2;
+  if (wasMastered) { showToast('Already mastered!'); return; }
+  updateWordMastery(currentUser.uid, wordId, 2).then(() => {
+    const masteredCount = Object.values(userProfile?.progress?.wordMastery || {}).filter(v => v === 2).length;
+    showToast('⭐ Word mastered! (' + masteredCount + ' total)');
+    scheduleWordReview(wordId);
+    updateDailyQuestProgress(currentUser.uid, 'words_learned');
+    showConfetti(['#FFD700', '#FF6B6B', '#4ECDC4']);
+  });
 }
 
 function render(app) {
@@ -175,11 +233,20 @@ function renderDashboard(el) {
   let nextLevel = progress ? getNextLevel(progress.totalPoints || 0) : getNextLevel(0);
   let levelProgress = progress ? getLevelProgress(progress.totalPoints || 0) : 0;
   let categories = getFullCategories();
+  let avatarStage = progress ? getAvatarStageForPoints(progress.totalPoints || 0, progress.badges || [], progress.categoryStars || {}).stage : 0;
+  let masteredCount = Object.values(progress?.wordMastery || {}).filter(v => v === 2).length;
+  let quests = progress?.dailyQuests || [];
+  let dueReviews = getDueReviews(progress);
 
   el.innerHTML = `
     <div class="dashboard container">
-      <h1>Hello, ${userProfile?.displayName || 'Learner'}! 👋</h1>
-      <p class="greeting">Let's learn some new words today!</p>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        <div class="avatar-sprite avatar-stage-${avatarStage}" title="${AVATAR_STAGES[avatarStage]?.name || 'Egg'}"></div>
+        <div>
+          <h1 style="margin:0">Hello, ${userProfile?.displayName || 'Learner'}! 👋</h1>
+          <p class="greeting" style="margin:0">${AVATAR_STAGES[avatarStage]?.desc || 'Keep learning!'}</p>
+        </div>
+      </div>
 
       <div class="level-progress">
         <div class="level-info">
@@ -195,11 +262,44 @@ function renderDashboard(el) {
         </div>
       </div>
 
+      ${dueReviews.length ? `
+        <div class="card" style="background:var(--warning-light, #FFF3E0);margin-bottom:16px;cursor:pointer" onclick="startReviewSession()">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:2rem">🔄</span>
+            <div>
+              <strong>${dueReviews.length} word${dueReviews.length > 1 ? 's' : ''} due for review!</strong>
+              <p style="margin:0;font-size:0.85rem;color:var(--text-light)">Tap to start a quick review session</p>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      ${quests.length ? `
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:1.2rem">📋</span>
+            <strong>Daily Quests</strong>
+          </div>
+          ${quests.map(q => `
+            <div class="card" style="padding:12px;margin-bottom:6px;display:flex;align-items:center;gap:12px;${q.completed ? 'opacity:0.6' : ''}">
+              <span style="font-size:1.3rem">${q.completed ? '✅' : q.icon}</span>
+              <div style="flex:1">
+                <div style="font-size:0.9rem">${q.description}</div>
+                <div class="level-bar" style="height:6px;margin-top:4px">
+                  <div class="level-bar-fill" style="width:${Math.round(q.progress/q.target*100)}%;height:6px;${q.completed ? 'background:var(--success)' : ''}"></div>
+                </div>
+              </div>
+              <span style="font-size:0.85rem;color:var(--text-light)">${q.progress}/${q.target} · +${q.reward}pts</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
       <div class="stats-grid">
         <div class="card stat-card">
           <div class="stat-icon">📖</div>
-          <div class="stat-value">${progress?.wordsLearned || 0}</div>
-          <div class="stat-label">Words Learned</div>
+          <div class="stat-value">${masteredCount}</div>
+          <div class="stat-label">Words Mastered</div>
         </div>
         <div class="card stat-card">
           <div class="stat-icon">🏆</div>
@@ -220,16 +320,21 @@ function renderDashboard(el) {
 
       <h2 style="margin-bottom:16px">Continue Learning</h2>
       <div class="card-grid">
-        ${categories.slice(0, 6).map(c => `
+        ${categories.slice(0, 6).map(c => {
+          const stars = userProfile?.progress?.categoryStars?.[c.id] || 0;
+          return `
           <div class="card category-card" onclick="navigateTo('category',{id:'${c.id}'})">
             <div class="icon">${c.icon}</div>
             <h3>${c.name}</h3>
             <p>${c.description}</p>
-            <span class="difficulty difficulty-${c.difficulty === 1 ? 'easy' : c.difficulty === 2 ? 'medium' : 'hard'}">
-              ${c.difficulty === 1 ? 'Easy' : c.difficulty === 2 ? 'Medium' : 'Hard'}
-            </span>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="difficulty difficulty-${c.difficulty === 1 ? 'easy' : c.difficulty === 2 ? 'medium' : 'hard'}">
+                ${c.difficulty === 1 ? 'Easy' : c.difficulty === 2 ? 'Medium' : 'Hard'}
+              </span>
+              ${stars > 0 ? `<span style="color:var(--warning);font-weight:600">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>` : ''}
+            </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
       <div style="text-align:center;margin-top:20px">
         <button class="btn btn-secondary" onclick="navigateTo('categories')">View All Categories</button>
@@ -246,21 +351,26 @@ function renderCategories(el) {
   el.innerHTML = `
     <div class="container" style="padding:40px 20px">
       <h1 style="margin-bottom:8px">Vocabulary Categories</h1>
-      <p style="color:var(--text-light);margin-bottom:24px">${categories.length} categories with 50 words each</p>
+      <p style="color:var(--text-light);margin-bottom:24px">${categories.length} categories — master all words and take the quiz to earn stars!</p>
 
       ${[1, 2, 3].map(diff => `
         <h2 style="margin:24px 0 12px">${diff === 1 ? '🟢' : diff === 2 ? '🟡' : '🔴'} ${diff === 1 ? 'Easy' : diff === 2 ? 'Medium' : 'Hard'} (${categorized[diff]?.length || 0})</h2>
         <div class="card-grid">
-          ${(categorized[diff] || []).map(c => `
+          ${(categorized[diff] || []).map(c => {
+            const stars = userProfile?.progress?.categoryStars?.[c.id] || 0;
+            return `
             <div class="card category-card" onclick="navigateTo('category',{id:'${c.id}'})">
               <div class="icon">${c.icon}</div>
               <h3>${c.name}</h3>
               <p>${c.description}</p>
-              <span class="difficulty difficulty-${diff === 1 ? 'easy' : diff === 2 ? 'medium' : 'hard'}">
-                ${diff === 1 ? 'Easy' : diff === 2 ? 'Medium' : 'Hard'}
-              </span>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="difficulty difficulty-${diff === 1 ? 'easy' : diff === 2 ? 'medium' : 'hard'}">
+                  ${diff === 1 ? 'Easy' : diff === 2 ? 'Medium' : 'Hard'}
+                </span>
+                ${stars > 0 ? `<span style="color:var(--warning);font-weight:600">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>` : `<span style="color:var(--text-light);font-size:0.8rem">☆☆☆</span>`}
+              </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `).join('')}
     </div>
@@ -271,11 +381,13 @@ function renderCategory(el, params) {
   const cat = getCategory(params.id);
   if (!cat) { navigateTo('categories'); return; }
 
+  const catStars = userProfile?.progress?.categoryStars?.[cat.id] || 0;
+  const mastery = userProfile?.progress?.wordMastery || {};
+
   let completedWords = 0;
   for (const w of cat.words) {
-    if (w.word) completedWords++;
+    if (mastery[cat.id + '-' + w.word.toLowerCase().replace(/\s+/g, '-')] === 2) completedWords++;
   }
-  const allComplete = completedWords >= cat.words.length;
 
   el.innerHTML = `
     <div class="category-detail container">
@@ -288,11 +400,22 @@ function renderCategory(el, params) {
             <span class="difficulty difficulty-${cat.difficulty === 1 ? 'easy' : cat.difficulty === 2 ? 'medium' : 'hard'}">
               ${cat.difficulty === 1 ? 'Easy' : cat.difficulty === 2 ? 'Medium' : 'Hard'}
             </span>
+            ${catStars > 0 ? ` · <span style="color:var(--warning);font-weight:600">${'★'.repeat(catStars)}${'☆'.repeat(3-catStars)}</span>` : ''}
           </div>
         </div>
       </div>
 
       <p style="color:var(--text-light);margin-bottom:24px">${cat.description}</p>
+
+      <div class="progress-row" style="margin-bottom:24px;gap:12px">
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+            <span>Progress</span>
+            <span>${completedWords}/${cat.words.length} mastered</span>
+          </div>
+          <div class="level-bar"><div class="level-bar-fill" style="width:${cat.words.length ? Math.round(completedWords/cat.words.length*100) : 0}%"></div></div>
+        </div>
+      </div>
 
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
         <button class="btn btn-primary" onclick="handleStartExercise('multiple-choice','${cat.id}')">✅ Multiple Choice</button>
@@ -301,25 +424,29 @@ function renderCategory(el, params) {
         <button class="btn btn-outline" onclick="handleStartExercise('spelling','${cat.id}')">🔤 Spelling</button>
       </div>
 
-      ${allComplete ? `
+      ${completedWords >= cat.words.length ? `
         <div style="background:var(--primary-light);border-radius:var(--radius);padding:20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-          <div><strong>🎯 Category Complete!</strong> Take the milestone quiz to earn your badge.</div>
+          <div><strong>🎯 Category Complete!</strong> Take the milestone quiz to earn your stars!</div>
           <button class="btn btn-primary" onclick="handleStartQuiz('${cat.id}')">Start Quiz</button>
         </div>
       ` : ''}
 
       <h2 style="margin-bottom:12px">Words (${cat.words.length})</h2>
       <div class="word-list">
-        ${cat.words.map((w, i) => `
+        ${cat.words.map((w, i) => {
+          const wid = cat.id + '-' + w.word.toLowerCase().replace(/\s+/g, '-');
+          const m = mastery[wid] || 0;
+          return `
           <div class="card word-item" onclick="navigateTo('word',{id:'${cat.id}',wordIndex:${i}})">
             <div class="word-main">
-              <div class="word-status status-new"></div>
+              <div class="word-status status-${m >= 2 ? 'mastered' : m >= 1 ? 'learning' : 'new'}"></div>
               <span class="word-text">${w.word}</span>
               <span style="color:var(--text-light);font-size:0.9rem">${w.pos}</span>
+              <span style="font-size:0.8rem;margin-left:auto">${m >= 2 ? '⭐⭐' : m >= 1 ? '⭐' : ''}</span>
             </div>
             <span style="color:var(--text-light);font-size:0.85rem">${w.phonetic}</span>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
     </div>
   `;
@@ -330,6 +457,8 @@ function renderWord(el, params) {
   if (!cat) { navigateTo('categories'); return; }
   const word = cat.words[parseInt(params.wordIndex) || 0];
   if (!word) { navigateTo('category', { id: cat.id }); return; }
+  const wordId = cat.id + '-' + word.word.toLowerCase().replace(/\s+/g, '-');
+  const mastery = userProfile?.progress?.wordMastery?.[wordId] || 0;
 
   el.innerHTML = `
     <div class="word-detail container">
@@ -338,6 +467,7 @@ function renderWord(el, params) {
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
           <h1>${word.word}</h1>
           <span class="phonetic">${word.phonetic || ''}</span>
+          <span style="font-size:1.2rem">${mastery >= 2 ? '⭐⭐' : mastery >= 1 ? '⭐' : ''}</span>
         </div>
         <span class="pos">${word.pos || ''}</span>
         <p class="definition">${word.definition}</p>
@@ -350,8 +480,12 @@ function renderWord(el, params) {
         ` : ''}
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px">
-          <button class="btn btn-sm btn-primary" onclick="showToast('🌟 Great word! Add it to your review list.')">Mark as Learning</button>
-          <button class="btn btn-sm btn-secondary" onclick="showToast('✅ Word mastered!')">Mark as Mastered</button>
+          <button class="btn btn-sm ${mastery >= 1 ? 'btn-secondary' : 'btn-primary'}" onclick="handleMarkLearning('${cat.id}','${wordId}')" ${mastery >= 1 ? 'disabled' : ''}>
+            ${mastery >= 1 ? '✅ Learning' : '📖 Mark as Learning'}
+          </button>
+          <button class="btn btn-sm ${mastery >= 2 ? 'btn-secondary' : 'btn-primary'}" onclick="handleMarkMastered('${cat.id}','${wordId}')" ${mastery >= 2 ? 'disabled' : ''}>
+            ${mastery >= 2 ? '✅ Mastered' : '⭐ Mark as Mastered'}
+          </button>
         </div>
       </div>
     </div>
@@ -683,6 +817,11 @@ async function completeExercise() {
       wordsLearned: (userProfile?.progress?.wordsLearned || 0) + exerciseState.correct,
       totalExercisesCompleted: (userProfile?.progress?.totalExercisesCompleted || 0) + 1,
     });
+    updateDailyQuestProgress(currentUser.uid, 'words_learned', exerciseState.correct * 0.5);
+    updateDailyQuestProgress(currentUser.uid, 'exercises_done');
+    if (isPerfect) await incrementPerfectScore(currentUser.uid);
+    // Record errors for weak word tracking
+    // currentExerciseQuestions.forEach((q, i) => { if (exerciseState.wrongIndices?.includes(i)) recordWordError(currentUser.uid, q.wordWordId || q.word || ''); });
     await saveExerciseResult(currentUser.uid, {
       type: exerciseState.type,
       categoryId: exerciseState.categoryId,
@@ -703,16 +842,53 @@ async function completeExercise() {
       }
     }
   }
+
+  if (isPerfect) showConfetti();
+}
+
+function startReviewSession() {
+  if (!currentUser) { showToast('Sign in to review words!'); return; }
+  const dueReviews = getDueReviews(userProfile?.progress);
+  if (!dueReviews.length) { showToast('No words to review right now!'); return; }
+  // Collect all words across categories that need review
+  const allCats = getFullCategories();
+  const reviewWords = [];
+  dueReviews.forEach(wordId => {
+    for (const cat of allCats) {
+      const found = cat.words.find(w => (cat.id + '-' + w.word.toLowerCase().replace(/\s+/g, '-')) === wordId);
+      if (found) { reviewWords.push({ word: found, categoryId: cat.id }); break; }
+    }
+  });
+  if (!reviewWords.length) { showToast('No review words available'); return; }
+  // Pick a random category from the review words
+  const pick = reviewWords[Math.floor(Math.random() * reviewWords.length)];
+  showToast('🔄 Starting review session...');
+  handleStartExercise('multiple-choice', pick.categoryId);
 }
 
 function showCelebration(badge) {
   if (!badge) return;
+  showConfetti();
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.frequency.setValueAtTime(523, ac.currentTime);
+    osc.frequency.setValueAtTime(659, ac.currentTime + 0.1);
+    osc.frequency.setValueAtTime(784, ac.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.2, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.4);
+    osc.start(ac.currentTime);
+    osc.stop(ac.currentTime + 0.4);
+  } catch (e) {}
   const overlay = document.createElement('div');
   overlay.className = 'celebration-overlay';
   overlay.innerHTML = `
     <div class="celebration-modal">
       <div style="font-size:4rem;margin-bottom:16px">${badge.icon || '🏅'}</div>
-      <h2>New Badge Earned!</h2>
+      <h2>🎉 New Badge Earned!</h2>
       <h3 style="color:var(--primary);margin:8px 0">${badge.name}</h3>
       <p style="color:var(--text-light)">${badge.description}</p>
       <button class="btn btn-primary" style="margin-top:20px" onclick="this.closest('.celebration-overlay').remove()">Awesome!</button>
@@ -983,6 +1159,11 @@ async function finishQuizAndShowResult(el) {
       await awardPoints(currentUser.uid, points, `Quiz passed: ${result.categoryName}`);
       rewards.push({ type: 'points', amount: points });
 
+      await updateCategoryStars(currentUser.uid, result.categoryId, result.percentage);
+      await updateDailyQuestProgress(currentUser.uid, 'quizzes_done');
+      updateDailyQuestProgress(currentUser.uid, 'perfect_scores', result.percentage >= 100 ? 1 : 0);
+      if (result.percentage === 100) await incrementPerfectScore(currentUser.uid);
+
       const badgeMap = {
         gold: { id: `quiz-gold-${result.categoryId}`, name: `${result.categoryName} Gold`, icon: '🥇', description: `Gold medal on ${result.categoryName} quiz!` },
         silver: { id: `quiz-silver-${result.categoryId}`, name: `${result.categoryName} Silver`, icon: '🥈', description: `Silver medal on ${result.categoryName} quiz!` },
@@ -994,6 +1175,8 @@ async function finishQuizAndShowResult(el) {
         rewards.push({ type: 'badge', ...badge });
         await checkAndAwardBadges(currentUser.uid, { type: result.percentage >= 90 ? 'quiz_gold' : 'quiz_pass' });
       }
+    } else {
+      updateDailyQuestProgress(currentUser.uid, 'quiz_attempts');
     }
 
     await saveExerciseResult(currentUser.uid, {
@@ -1007,6 +1190,8 @@ async function finishQuizAndShowResult(el) {
       points: rewards.reduce((s, r) => s + (r.amount || 0), 0),
     });
   }
+
+  let hasBadge = rewards.some(r => r.type === 'badge');
 
   el.innerHTML = `
     <div class="quiz-container container">
@@ -1041,7 +1226,8 @@ async function finishQuizAndShowResult(el) {
     </div>
   `;
 
-  if (rewards.some(r => r.type === 'badge')) {
+  if (result.percentage >= 90) showConfetti();
+  if (hasBadge) {
     setTimeout(() => showCelebration(rewards.find(r => r.type === 'badge')), 500);
   }
 }
