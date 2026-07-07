@@ -14,7 +14,7 @@ try {
     app = firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
-    analytics = firebase.analytics();
+    try { analytics = firebase.analytics(); } catch (e) { console.log('Analytics not available (optional)'); }
     db.settings({ merge: true });
   }
 } catch (e) {
