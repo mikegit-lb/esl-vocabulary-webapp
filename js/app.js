@@ -703,6 +703,7 @@ function renderExercise(el, params) {
 }
 
 let currentExerciseQuestions = [];
+let currentFlashcardWord = '';
 
 function renderExerciseContent(el, cat, type, state, questions) {
   currentExerciseQuestions = questions;
@@ -727,19 +728,24 @@ function renderExerciseContent(el, cat, type, state, questions) {
       </div>
     `;
   } else if (q.type === 'flashcard') {
+    const fEmojis = getWordIllustration(q.word);
+    currentFlashcardWord = q.word;
     questionHTML = `
-      <div class="card flashcard" id="flashcard" onclick="flipFlashcard()">
+      <div class="card flashcard" id="flashcard" onclick="flipFlashcard('${q.word.replace(/'/g, "\\'")}')">
         <div class="flashcard-inner">
           <div class="flashcard-front">
+            <div style="font-size:5rem;margin-bottom:12px;opacity:0.6">${fEmojis[0]}</div>
             <h2>${q.word}</h2>
-            <p style="color:var(--text-light)">Tap to flip</p>
+            <p style="color:var(--text-light);margin-top:8px">👆 Tap to flip & listen</p>
           </div>
-          <div class="flashcard-back" style="display:none" id="flashcard-back">
+          <div class="flashcard-back" id="flashcard-back">
+            <div class="flashcard-illustration">${fEmojis.slice(0, 3).join(' ')}</div>
             <h3>${q.word}</h3>
             <span class="pos">${q.pos || ''}</span>
-            <p>${q.definition}</p>
-            <div class="example" style="margin-top:12px">"${q.example}"</div>
-            ${q.phonetic ? `<p style="color:var(--text-light);margin-top:8px">${q.phonetic}</p>` : ''}
+            <p style="font-size:1.1rem;margin:8px 0">${q.definition}</p>
+            <div class="example" style="margin-top:8px">"${q.example}"</div>
+            ${q.phonetic ? `<p style="color:var(--text-light);margin-top:6px;font-size:0.95rem">${q.phonetic}</p>` : ''}
+            <div class="flashcard-speak-indicator" id="speak-indicator">🔊 Listening...</div>
           </div>
         </div>
       </div>
@@ -1752,12 +1758,15 @@ async function handleSignOut() {
   render(document.getElementById('app'));
 }
 
-function flipFlashcard() {
+function flipFlashcard(word) {
   const flashcard = document.getElementById('flashcard');
   const back = document.getElementById('flashcard-back');
   if (flashcard && back) {
     flashcard.classList.toggle('flipped');
     back.style.display = back.style.display === 'none' ? 'block' : 'none';
+    if (back.style.display === 'block') {
+      speakWord(word);
+    }
   }
 }
 
