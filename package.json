@@ -1,0 +1,8 @@
+{
+  "name": "esl-vocabulary-webapp",
+  "version": "1.0.0",
+  "description": "ESL Vocabulary Webpage for young learners with exercises, quizzes, and gamification",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
