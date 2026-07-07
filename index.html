@@ -70,8 +70,7 @@
           signOut: function() {
             demoUser = null;
             currentUser = null;
-            userProfile = { displayName: 'Demo Learner', progress: { totalPoints: 0, level: 1, currentStreak: 0, wordsLearned: 0, totalExercisesCompleted: 0, averageAccuracy: 0, totalCorrect: 0, totalAttempts: 0, badges: [] } };
-            render(document.getElementById('app'));
+            userProfile = { displayName: 'Demo Learner', email: 'demo@esl-vocab.app', progress: { totalPoints: 0, level: 1, currentStreak: 0, wordsLearned: 0, totalExercisesCompleted: 0, averageAccuracy: 0, totalCorrect: 0, totalAttempts: 0, badges: [] } };
             return Promise.resolve();
           },
           currentUser: demoUser,

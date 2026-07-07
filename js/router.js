@@ -1,23 +1,11 @@
-const ROUTES = {
-  'landing': { render: renderLanding, auth: false },
-  'login': { render: renderLogin, auth: false },
-  'signup': { render: renderSignup, auth: false },
-  'dashboard': { render: renderDashboard, auth: true },
-  'categories': { render: renderCategories, auth: true },
-  'category': { render: renderCategory, auth: true },
-  'word': { render: renderWord, auth: true },
-  'exercise': { render: renderExercise, auth: true },
-  'quiz': { render: renderQuiz, auth: true },
-  'quiz-result': { render: renderQuizResult, auth: true },
-  'progress': { render: renderProgress, auth: true },
-  'badges': { render: renderBadges, auth: true },
-  'profile': { render: renderProfile, auth: true },
-  'leaderboard': { render: renderLeaderboard, auth: true },
-  'settings': { render: renderSettings, auth: true },
-};
+const ROUTES = {};
 
 let currentRoute = null;
 let routeParams = {};
+
+function registerRoutes(routes) {
+  Object.assign(ROUTES, routes);
+}
 
 function navigateTo(path, params = {}) {
   routeParams = params;
@@ -35,8 +23,8 @@ function navigateTo(path, params = {}) {
   }
 
   currentRoute = path;
-  const app = document.getElementById('app');
-  route.render(app, params);
+  const content = document.getElementById('page-content') || document.getElementById('app');
+  route.render(content, params);
   window.scrollTo(0, 0);
 }
 

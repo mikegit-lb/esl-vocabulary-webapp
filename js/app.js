@@ -1277,7 +1277,6 @@ async function handleSignup(e) {
 
 async function handleSignOut() {
   await signOut();
-  navigateTo('landing');
   render(document.getElementById('app'));
 }
 
@@ -1289,3 +1288,21 @@ function flipFlashcard() {
     back.style.display = back.style.display === 'none' ? 'block' : 'none';
   }
 }
+
+registerRoutes({
+  'landing': { render: renderLanding, auth: false },
+  'login': { render: renderLogin, auth: false },
+  'signup': { render: renderSignup, auth: false },
+  'dashboard': { render: renderDashboard, auth: true },
+  'categories': { render: renderCategories, auth: true },
+  'category': { render: renderCategory, auth: true },
+  'word': { render: renderWord, auth: true },
+  'exercise': { render: renderExercise, auth: true },
+  'quiz': { render: renderQuiz, auth: true },
+  'quiz-result': { render: renderQuizResult, auth: true },
+  'progress': { render: renderProgress, auth: true },
+  'badges': { render: renderBadges, auth: true },
+  'profile': { render: renderProfile, auth: true },
+  'leaderboard': { render: renderLeaderboard, auth: true },
+  'settings': { render: renderSettings, auth: true },
+});
