@@ -25,7 +25,7 @@ function speakWord(text) {
 
 function showConfetti(colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']) {
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:10000';
+  canvas.className = 'confetti-canvas';
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   document.body.appendChild(canvas);
@@ -59,6 +59,118 @@ function showConfetti(colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96
     requestAnimationFrame(animate);
   }
   animate();
+}
+
+const WORD_ILLUSTRATIONS = {
+  cat: ['🐱', '🐈'], dog: ['🐕', '🐶'], elephant: ['🐘'], lion: ['🦁'], tiger: ['🐯'], bear: ['🐻'], bird: ['🐦'],
+  fish: ['🐟', '🐠'], horse: ['🐴', '🐎'], monkey: ['🐵'], rabbit: ['🐰', '🐇'], sheep: ['🐑'], cow: ['🐄', '🐮'],
+  frog: ['🐸'], duck: ['🦆'], chicken: ['🐔'], pig: ['🐷', '🐖'], snake: ['🐍'], turtle: ['🐢'], whale: ['🐋'],
+  dolphin: ['🐬'], parrot: ['🦜'], panda: ['🐼'], kangaroo: ['🦘'], owl: ['🦉'], fox: ['🦊'], mouse: ['🐭', '🐁'],
+  squirrel: ['🐿️'], bee: ['🐝'], butterfly: ['🦋'],
+  red: ['🔴'], blue: ['🔵'], green: ['🟢'], yellow: ['🟡'], orange: ['🟠'], purple: ['🟣'], pink: ['🩷'],
+  black: ['⚫'], white: ['⚪'], brown: ['🟤'], gray: ['⬜'], gold: ['🥇'], silver: ['🥈'],
+  rainbow: ['🌈'], colorful: ['🌈'],
+  one: ['1️⃣'], two: ['2️⃣'], three: ['3️⃣'], four: ['4️⃣'], five: ['5️⃣'], six: ['6️⃣'], seven: ['7️⃣'],
+  eight: ['8️⃣'], nine: ['9️⃣'], ten: ['🔟'], zero: ['0️⃣'], half: ['½'],
+  mother: ['👩', '🤱'], father: ['👨', '👨‍👧'], sister: ['👧', '👩'], brother: ['👦', '👨'],
+  baby: ['👶'], grandmother: ['👵'], grandfather: ['👴'], aunt: ['👩', '💁‍♀️'], uncle: ['👨', '💁‍♂️'],
+  cousin: ['🧑‍🤝‍🧑'], daughter: ['👧'], son: ['👦'], family: ['👨‍👩‍👧‍👦'],
+  apple: ['🍎'], banana: ['🍌'], orange: ['🍊'], strawberry: ['🍓'], grape: ['🍇'], watermelon: ['🍉'],
+  lemon: ['🍋'], cherry: ['🍒'], peach: ['🍑'], pear: ['🍐'], pineapple: ['🍍'], mango: ['🥭'],
+  fruit: ['🍎', '🍌', '🍊'], bread: ['🍞'], rice: ['🍚'], pasta: ['🍝'], pizza: ['🍕'], burger: ['🍔'],
+  sandwich: ['🥪'], salad: ['🥗'], soup: ['🍜'], cake: ['🎂'], cookie: ['🍪'], ice: ['🍦', '🧊'],
+  cream: ['🍦'], chocolate: ['🍫'], candy: ['🍬'], milk: ['🥛'], water: ['💧', '🚰'], juice: ['🧃'],
+  coffee: ['☕'], tea: ['🍵'], egg: ['🥚'], cheese: ['🧀'], butter: ['🧈'], meat: ['🥩'],
+  chicken: ['🍗'], fish: ['🐟'], food: ['🍽️'],
+  head: ['🗣️', '👤'], hair: ['💇', '🦰'], face: ['😊'], eye: ['👁️', '👀'], ear: ['👂'], nose: ['👃'],
+  mouth: ['👄'], tooth: ['🦷'], tongue: ['👅'], arm: ['💪'], hand: ['✋', '🖐️'], finger: ['👆', '🖐️'],
+  leg: ['🦵'], foot: ['🦶', '👣'], knee: ['🦵'], shoulder: ['🤷'], back: ['🔙'],
+  shirt: ['👕'], pants: ['👖'], dress: ['👗'], skirt: ['👗'], shoe: ['👟', '👞'], sock: ['🧦'],
+  hat: ['🎩', '🧢'], coat: ['🧥'], jacket: ['🧥'], boot: ['👢'], belt: ['🩴'], tie: ['👔'],
+  scarf: ['🧣'], glove: ['🧤'],
+  sun: ['☀️'], rain: ['🌧️', '☔'], snow: ['❄️', '🌨️'], cloud: ['☁️'], wind: ['💨'], storm: ['⛈️'],
+  fog: ['🌫️'], ice: ['🧊'], hot: ['🥵', '🌡️'], cold: ['🥶', '❄️'], warm: ['☀️', '🌡️'],
+  book: ['📖', '📕'], pencil: ['✏️'], pen: ['🖊️'], ruler: ['📏'], eraser: ['🧹'], bag: ['🎒'],
+  desk: ['🪑'], chair: ['🪑'], paper: ['📄'], notebook: ['📓'], computer: ['💻'], school: ['🏫'],
+  happy: ['😊', '😄'], sad: ['😢', '😭'], angry: ['😡', '🤬'], scared: ['😨', '😱'], surprised: ['😮', '😲'],
+  tired: ['😴', '🥱'], excited: ['🤩', '😆'], nervous: ['😰', '😬'], calm: ['😌', '🧘'], love: ['❤️', '😍'],
+  run: ['🏃'], walk: ['🚶'], jump: ['🤸', '⬆️'], swim: ['🏊'], fly: ['✈️', '🦅'], eat: ['🍽️', '😋'],
+  drink: ['🥤', '🍹'], sleep: ['💤', '😴'], read: ['📖', '👓'], write: ['✍️', '📝'], play: ['🎮', '⚽'],
+  sing: ['🎤', '🎵'], dance: ['💃', '🕺'], cook: ['👨‍🍳', '🍳'], clean: ['🧹', '🧼'], wash: ['🧽', '🚿'],
+  car: ['🚗', '🚙'], bus: ['🚌'], train: ['🚂', '🚆'], bike: ['🚲'], airplane: ['✈️'], boat: ['⛵', '🚢'],
+  truck: ['🚛'], taxi: ['🚕'], helicopter: ['🚁'], ship: ['🚢'], transport: ['🚗', '🚌', '✈️'],
+  doctor: ['👨‍⚕️'], teacher: ['👨‍🏫'], student: ['🧑‍🎓'], police: ['👮'], firefighter: ['👨‍🚒'],
+  nurse: ['👩‍⚕️'], pilot: ['👨‍✈️'], chef: ['👨‍🍳'], farmer: ['👨‍🌾'], singer: ['🎤', '🎵'],
+  hello: ['👋'], goodbye: ['👋', '🙋'], thanks: ['🙏', '😊'], please: ['🙏'], sorry: ['😔', '🙇'],
+  morning: ['🌅', '☀️'], afternoon: ['☀️'], evening: ['🌆'], night: ['🌙', '🌃'],
+  spring: ['🌸', '🌼'], summer: ['☀️', '🏖️'], autumn: ['🍂', '🍁'], winter: ['❄️', '⛄', '🎄'],
+  monday: ['📆'], tuesday: ['📆'], wednesday: ['📆'], thursday: ['📆'], friday: ['📆'], saturday: ['📆'], sunday: ['📆'],
+  january: ['🗓️'], february: ['🗓️'], march: ['🗓️'], april: ['🗓️'], may: ['🗓️'], june: ['🗓️'],
+  july: ['🗓️'], august: ['🗓️'], september: ['🗓️'], october: ['🗓️'], november: ['🗓️'], december: ['🗓️'],
+  circle: ['⭕', '🔴'], square: ['🟦', '⬜'], triangle: ['🔺'], star: ['⭐', '🌟'], heart: ['❤️', '💖'],
+  diamond: ['💎'], cross: ['❌'],
+  soccer: ['⚽'], basketball: ['🏀'], football: ['🏈'], tennis: ['🎾'], baseball: ['⚾'], golf: ['⛳'],
+  swimming: ['🏊'], running: ['🏃'], cycling: ['🚴'],
+  in: ['📥'], on: ['📄'], under: ['⬇️'], above: ['⬆️'], next: ['➡️'], between: ['↔️'], behind: ['🔙'],
+  in_front: ['👤➡️'], near: ['📍'], far: ['📍'],
+  big: ['🐘', '📈'], small: ['🐭', '📉'], tall: ['📏⬆️'], short: ['📏⬆️'], fast: ['🐆', '🚀'], slow: ['🐢', '🐌'],
+  hot: ['🔥', '🥵'], cold: ['🧊', '🥶'], new: ['🆕'], old: ['👴', '📯'], young: ['👶', '🌱'],
+  good: ['👍', '✅'], bad: ['👎', '❌'], happy: ['😊'], sad: ['😢'],
+  house: ['🏠'], home: ['🏡'], door: ['🚪'], window: ['🪟'], room: ['🚪'], kitchen: ['🍳'], bedroom: ['🛏️'],
+  bathroom: ['🚿', '🛁'], garden: ['🌻', '🌳'],
+  table: ['🪑', '📦'], chair: ['🪑'], bed: ['🛏️'], sofa: ['🛋️'], lamp: ['💡'], clock: ['🕐', '⏰'],
+  phone: ['📱', '📞'], television: ['📺'], radio: ['📻'],
+  tree: ['🌳', '🌲'], flower: ['🌸', '🌻', '🌺'], grass: ['🌿'], mountain: ['⛰️', '🏔️'], river: ['🏞️', '💧'],
+  ocean: ['🌊'], sea: ['🌊'], forest: ['🌲🌳🌲'], sun: ['☀️'], moon: ['🌙'], star: ['⭐', '🌟'],
+  earth: ['🌍'], world: ['🌍'],
+  music: ['🎵', '🎶'], song: ['🎵'], guitar: ['🎸'], piano: ['🎹'], drum: ['🥁'], violin: ['🎻'],
+  trumpet: ['🎺'], flute: ['🪈'],
+  happy: ['😊'], kind: ['🤗'], brave: ['🦁', '💪'], smart: ['🧠', '🤓'], funny: ['😂', '🤣'],
+  friendly: ['🤝', '😊'], honest: ['🤥➡️😇'],
+  what: ['❓'], who: ['👤❓'], where: ['📍❓'], when: ['⏰❓'], why: ['🤔❓'], how: ['🔧❓'],
+  time: ['⏰', '🕐'], today: ['📅'], tomorrow: ['📅➡️'], yesterday: ['⬅️📅'], now: ['⏰', '⚡'],
+  christmas: ['🎄', '🎅'], halloween: ['🎃', '👻'], birthday: ['🎂', '🎉'], new_year: ['🎆', '🎇'],
+  holiday: ['🏖️', '🎉'], party: ['🎉', '🥳'],
+  beach: ['🏖️', '🌊'], mountain: ['⛰️'], forest: ['🌲🌳🌲'], desert: ['🏜️'], island: ['🏝️'],
+  thank: ['🙏'], please: ['🙏'], sorry: ['😔'], welcome: ['👋', '😊'], excuse: ['🤚'],
+  look: ['👀', '🔍'], see: ['👀'], watch: ['👀', '📺'], listen: ['👂', '🔊'], hear: ['👂'],
+  speak: ['🗣️', '💬'], talk: ['💬', '🗨️'], say: ['💬'], tell: ['🗣️', '💬'],
+  go: ['🏃➡️', '🚶'], come: ['🚶➡️👤'], give: ['🎁', '✋'], take: ['🤲'], make: ['🔧', '🛠️'],
+  know: ['🧠', '💡'], think: ['🤔', '💭'], want: ['💖', '👀'], need: ['❗', '📋'],
+  can: ['✅', '💪'], will: ['🔮', '➡️'], must: ['⚠️', '❗'], should: ['👍', '💡'],
+  up: ['⬆️', '🆙'], down: ['⬇️'], left: ['⬅️'], right: ['➡️'],
+  big: ['📈'], small: ['📉'], fast: ['🚀'], slow: ['🐢'],
+  quiet: ['🤫'], loud: ['📢', '🔊'], soft: ['☁️', '🫧'], hard: ['🧱', '💎'],
+};
+
+function getWordIllustration(word) {
+  const key = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (WORD_ILLUSTRATIONS[key]) {
+    return WORD_ILLUSTRATIONS[key];
+  }
+  for (const [k, v] of Object.entries(WORD_ILLUSTRATIONS)) {
+    if (key.includes(k) || k.includes(key)) return v;
+  }
+  return ['📖'];
+}
+
+function getCategoryColorClass(categoryId) {
+  const colorMap = {
+    animals: 'category-color-animals', colors: 'category-color-colors',
+    numbers: 'category-color-numbers', family: 'category-color-family',
+    food: 'category-color-food', 'body-parts': 'category-color-body',
+    clothing: 'category-color-clothing', weather: 'category-color-weather',
+    school: 'category-color-school', house: 'category-color-house',
+  };
+  return colorMap[categoryId] || '';
+}
+
+function renderStars(count, total = 3) {
+  let html = '<span class="star-rating">';
+  for (let i = 0; i < total; i++) {
+    html += `<span class="star ${i < count ? 'filled' : 'empty'}">${i < count ? '★' : '☆'}</span>`;
+  }
+  return html + '</span>';
 }
 
 function getFullCategories() {
@@ -174,28 +286,28 @@ function renderLanding(el) {
       <h1>Learn <span>English</span> Vocabulary!</h1>
       <p>Fun exercises, milestone quizzes, and badges to help young learners master English words</p>
       <div class="hero-buttons">
-        <button class="btn btn-primary btn-lg" onclick="navigateTo('signup')">Get Started Free</button>
+        <button class="btn btn-primary btn-lg" onclick="navigateTo('signup')">Get Started Free 🚀</button>
         <button class="btn btn-outline btn-lg" onclick="navigateTo('login')">I Already Have an Account</button>
       </div>
     </div>
     <div class="features">
-      <div class="card feature-card">
-        <div class="icon">📚</div>
-        <h3>55+ Categories</h3>
-        <p>Over 2,500 words across animals, colors, food, phrasal verbs, and more</p>
+      <div class="card feature-card" style="border-top-color:#4CAF50">
+        <div class="icon">🐾</div>
+        <h3>Animals & Nature</h3>
+        <p>Learn words for animals, weather, seasons, and the world around you</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" style="border-top-color:#FF9800">
         <div class="icon">🎮</div>
         <h3>Fun Exercises</h3>
         <p>Multiple choice, flashcards, match games, spelling, and sentence building</p>
       </div>
-      <div class="card feature-card">
+      <div class="card feature-card" style="border-top-color:#9C27B0">
         <div class="icon">🏆</div>
         <h3>Badges & Levels</h3>
         <p>Earn badges, level up, and build daily streaks as you learn</p>
       </div>
-      <div class="card feature-card">
-        <div class="icon">✅</div>
+      <div class="card feature-card" style="border-top-color:#2196F3">
+        <div class="icon">🎯</div>
         <h3>Milestone Quizzes</h3>
         <p>Test your knowledge after every category with mixed-question quizzes</p>
       </div>
@@ -389,8 +501,9 @@ function renderDashboard(el) {
       <div class="card-grid">
         ${categories.slice(0, 6).map(c => {
           const stars = userProfile?.progress?.categoryStars?.[c.id] || 0;
+          const colorClass = getCategoryColorClass(c.id);
           return `
-          <div class="card category-card" onclick="navigateTo('category',{id:'${c.id}'})">
+          <div class="card category-card ${colorClass}" onclick="navigateTo('category',{id:'${c.id}'})">
             <div class="icon">${c.icon}</div>
             <h3>${c.name}</h3>
             <p>${c.description}</p>
@@ -398,7 +511,7 @@ function renderDashboard(el) {
               <span class="difficulty difficulty-${c.difficulty === 1 ? 'easy' : c.difficulty === 2 ? 'medium' : 'hard'}">
                 ${c.difficulty === 1 ? 'Easy' : c.difficulty === 2 ? 'Medium' : 'Hard'}
               </span>
-              ${stars > 0 ? `<span style="color:var(--warning);font-weight:600">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>` : ''}
+              ${stars > 0 ? renderStars(stars) : ''}
             </div>
           </div>
         `}).join('')}
@@ -425,8 +538,9 @@ function renderCategories(el) {
         <div class="card-grid">
           ${(categorized[diff] || []).map(c => {
             const stars = userProfile?.progress?.categoryStars?.[c.id] || 0;
+            const colorClass = getCategoryColorClass(c.id);
             return `
-            <div class="card category-card" onclick="navigateTo('category',{id:'${c.id}'})">
+            <div class="card category-card ${colorClass}" onclick="navigateTo('category',{id:'${c.id}'})">
               <div class="icon">${c.icon}</div>
               <h3>${c.name}</h3>
               <p>${c.description}</p>
@@ -434,7 +548,7 @@ function renderCategories(el) {
                 <span class="difficulty difficulty-${diff === 1 ? 'easy' : diff === 2 ? 'medium' : 'hard'}">
                   ${diff === 1 ? 'Easy' : diff === 2 ? 'Medium' : 'Hard'}
                 </span>
-                ${stars > 0 ? `<span style="color:var(--warning);font-weight:600">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>` : `<span style="color:var(--text-light);font-size:0.8rem">☆☆☆</span>`}
+                ${stars > 0 ? renderStars(stars) : `<span class="star-rating"><span class="star empty">☆☆☆</span></span>`}
               </div>
             </div>
           `}).join('')}
@@ -450,6 +564,7 @@ function renderCategory(el, params) {
 
   const catStars = userProfile?.progress?.categoryStars?.[cat.id] || 0;
   const mastery = userProfile?.progress?.wordMastery || {};
+  const colorClass = getCategoryColorClass(cat.id);
 
   let completedWords = 0;
   for (const w of cat.words) {
@@ -467,7 +582,7 @@ function renderCategory(el, params) {
             <span class="difficulty difficulty-${cat.difficulty === 1 ? 'easy' : cat.difficulty === 2 ? 'medium' : 'hard'}">
               ${cat.difficulty === 1 ? 'Easy' : cat.difficulty === 2 ? 'Medium' : 'Hard'}
             </span>
-            ${catStars > 0 ? ` · <span style="color:var(--warning);font-weight:600">${'★'.repeat(catStars)}${'☆'.repeat(3-catStars)}</span>` : ''}
+            ${catStars > 0 ? ` · ${renderStars(catStars)}` : ''}
           </div>
         </div>
       </div>
@@ -493,9 +608,9 @@ function renderCategory(el, params) {
       </div>
 
       ${completedWords >= cat.words.length ? `
-        <div style="background:var(--primary-light);border-radius:var(--radius);padding:20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="background:var(--primary-light);border-radius:var(--radius);padding:20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;animation:glowPulse 2s infinite">
           <div><strong>🎯 Category Complete!</strong> Take the milestone quiz to earn your stars!</div>
-          <button class="btn btn-primary" onclick="handleStartQuiz('${cat.id}')">Start Quiz</button>
+          <button class="btn btn-primary" onclick="handleStartQuiz('${cat.id}')">Start Quiz 🎯</button>
         </div>
       ` : ''}
 
@@ -504,16 +619,20 @@ function renderCategory(el, params) {
         ${cat.words.map((w, i) => {
           const wid = cat.id + '-' + w.word.toLowerCase().replace(/\s+/g, '-');
           const m = mastery[wid] || 0;
+          const emojis = getWordIllustration(w.word);
           return `
-          <div class="card word-item" onclick="navigateTo('word',{id:'${cat.id}',wordIndex:${i}})">
+          <div class="card word-item ${colorClass}" onclick="navigateTo('word',{id:'${cat.id}',wordIndex:${i}})">
             <div class="word-main">
+              <span style="font-size:1.3rem;margin-right:4px">${emojis[0]}</span>
               <div class="word-status status-${m >= 2 ? 'mastered' : m >= 1 ? 'learning' : 'new'}"></div>
               <span class="word-text">${w.word}</span>
-              <button class="btn btn-sm btn-outline btn-tts" style="padding:4px 8px;margin-left:8px;font-size:0.8rem;border:none;background:rgba(0,0,0,0.03)" onclick="event.stopPropagation();speakWord('${w.word.replace(/'/g, "\\'")}')" title="Listen">🔊</button>
-              <span style="color:var(--text-light);font-size:0.9rem;margin-left:6px">${w.pos}</span>
-              <span style="font-size:0.8rem;margin-left:auto">${m >= 2 ? '⭐⭐' : m >= 1 ? '⭐' : ''}</span>
+              <button class="btn btn-sm btn-outline btn-tts" style="padding:4px 8px;margin-left:4px;font-size:0.8rem;border:none;background:rgba(0,0,0,0.03)" onclick="event.stopPropagation();speakWord('${w.word.replace(/'/g, "\\'")}')" title="Listen">🔊</button>
+              <span style="color:var(--text-light);font-size:0.85rem;margin-left:4px">${w.pos}</span>
             </div>
-            <span style="color:var(--text-light);font-size:0.85rem">${w.phonetic}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="color:var(--text-light);font-size:0.8rem">${w.phonetic}</span>
+              <span style="font-size:0.8rem">${m >= 2 ? '⭐⭐' : m >= 1 ? '⭐' : ''}</span>
+            </div>
           </div>
         `}).join('')}
       </div>
@@ -528,10 +647,15 @@ function renderWord(el, params) {
   if (!word) { navigateTo('category', { id: cat.id }); return; }
   const wordId = cat.id + '-' + word.word.toLowerCase().replace(/\s+/g, '-');
   const mastery = userProfile?.progress?.wordMastery?.[wordId] || 0;
+  const emojis = getWordIllustration(word.word);
 
   el.innerHTML = `
     <div class="word-detail container">
       <button class="btn btn-sm btn-outline" onclick="navigateTo('category',{id:'${cat.id}'})" style="margin-bottom:16px">← Back to ${cat.name}</button>
+      <div class="word-illustration word-illustration-category-${cat.id}">
+        <span class="main-icon">${emojis[0]}</span>
+        ${emojis.length > 1 ? `<span class="supporting-icons">${emojis.slice(1).join('')}</span>` : ''}
+      </div>
       <div class="card">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <h1 style="margin:0">${word.word}</h1>
@@ -944,11 +1068,16 @@ async function completeExercise() {
   const root = document.getElementById('page-content');
   if (!root) return;
 
+  const starCount = accuracy >= 100 ? 3 : accuracy >= 80 ? 2 : accuracy >= 60 ? 1 : 0;
+  const emoji = isPerfect ? '🎉' : accuracy >= 80 ? '👏' : accuracy >= 60 ? '💪' : '📖';
+
   root.innerHTML = `
     <div class="exercise-container container" style="text-align:center">
       <div class="card" style="padding:48px">
-        <div style="font-size:4rem;margin-bottom:16px">${isPerfect ? '🎉' : '👏'}</div>
-        <h2>Exercise Complete!</h2>
+        <div style="font-size:4rem;margin-bottom:8px;animation:bounce 0.6s ease">${emoji}</div>
+        <div style="margin-bottom:12px">${renderStars(starCount)}</div>
+        <h2 style="${isPerfect ? "background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;" : ""}">${isPerfect ? '🎯 Perfect Score!' : 'Exercise Complete!'}</h2>
+        ${isPerfect ? '<p style="color:var(--text-light);margin-bottom:8px">Amazing work! You got every answer right! 🌟</p>' : accuracy >= 80 ? '<p style="color:var(--text-light);margin-bottom:8px">Great job! You\'re doing really well! 💪</p>' : '<p style="color:var(--text-light);margin-bottom:8px">Keep practicing, you\'re improving! 📖</p>'}
         <div class="stats-grid" style="margin:24px 0">
           <div class="stat-card" style="box-shadow:none;background:var(--bg)">
             <div class="stat-value">${exerciseState.correct}/${exerciseState.total}</div>
@@ -1360,18 +1489,21 @@ async function finishQuizAndShowResult(el) {
 
   let hasBadge = rewards.some(r => r.type === 'badge');
 
+  const quizStarCount = result.percentage >= 90 ? 3 : result.percentage >= 70 ? 2 : result.percentage >= 50 ? 1 : 0;
+
   el.innerHTML = `
     <div class="quiz-container container">
       <div class="card" style="padding:48px">
         <div class="quiz-result">
-          <div class="icon">${result.passed ? '🎉' : '😅'}</div>
+          <div class="icon" style="animation:bounce 0.6s ease">${result.passed ? '🎉' : '😅'}</div>
           <h2>${result.passed ? 'Congratulations!' : 'Keep Trying!'}</h2>
+          <div style="margin-bottom:8px">${renderStars(quizStarCount)}</div>
           <div class="score">${result.percentage}%</div>
           <div style="margin-bottom:16px">
             <span style="display:inline-block;padding:6px 20px;border-radius:20px;font-weight:700;font-size:1.1rem;
               background:${result.passed ? 'var(--primary-light)' : '#FFEBEE'};
               color:${result.passed ? 'var(--primary-dark)' : 'var(--error)'}">
-              ${result.passed ? `✅ PASSED${result.tier === 'gold' ? ' (Gold!)' : result.tier === 'silver' ? ' (Silver!)' : ''}` : '❌ Needs Improvement'}
+              ${result.passed ? `✅ PASSED${result.tier === 'gold' ? ' (Gold! 🥇)' : result.tier === 'silver' ? ' (Silver! 🥈)' : ' 🥉'} ` : '❌ Needs Improvement'}
             </span>
           </div>
           <div class="details">
@@ -1447,15 +1579,19 @@ function renderProgress(el) {
       <div style="margin-top:32px">
         <h3 style="margin-bottom:16px">All Categories</h3>
         <div class="card-grid">
-          ${getFullCategories().map(c => `
-            <div class="card category-card" onclick="navigateTo('category',{id:'${c.id}'})" style="display:flex;align-items:center;gap:12px;text-align:left;padding:16px">
+          ${getFullCategories().map(c => {
+            const stars = userProfile?.progress?.categoryStars?.[c.id] || 0;
+            const colorClass = getCategoryColorClass(c.id);
+            return `
+            <div class="card category-card ${colorClass}" onclick="navigateTo('category',{id:'${c.id}'})" style="display:flex;align-items:center;gap:12px;text-align:left;padding:16px">
               <span style="font-size:2rem">${c.icon}</span>
               <div>
                 <h4 style="margin-bottom:2px">${c.name}</h4>
                 <span style="font-size:0.85rem;color:var(--text-light)">${c.words.length} words</span>
+                ${stars > 0 ? `<div style="margin-top:4px">${renderStars(stars)}</div>` : ''}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       </div>
     </div>
