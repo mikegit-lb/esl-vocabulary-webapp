@@ -13,7 +13,7 @@ function showToast(msg) {
 
 function getFullCategories() {
   const expanded = allCategoryMeta.map(c => expandCategoryData(c.id, c.name, c.icon, c.diff, c.desc, CATEGORY_WORDS[c.id] || []));
-  return [...VOCABULARY_DATA, ...expanded];
+  return expanded;
 }
 
 function getCategory(id) {
